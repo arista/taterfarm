@@ -8,15 +8,12 @@ export function cli() {
     .description("CLI to generate project structure and files")
     .version("0.0.1")
   cmd
-    .requiredOption("-d, --drink <size>", "drink size")
-    .addOption(new Option("-o, --output [file]", "output file name").default("abc", "the default").preset("HOME"))
+//    .requiredOption("-d, --drink <size>", "drink size")
+//    .addOption(new Option("-o, --output [file]", "output file name").default("abc", "the default").preset("HOME"))
 
-  const cmd2 = new Command()
-  cmd2
-    .name("update")
-    .option("-n, --name <name>", "the name")
-
-  cmd.addCommand(cmd2)
+  cmd.addCommand(new Command().
+                 name("generate-project")
+                )
 
   cmd.parse(process.argv)
   const options = cmd.opts()
