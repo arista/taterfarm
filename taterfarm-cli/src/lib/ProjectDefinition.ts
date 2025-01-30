@@ -22,8 +22,8 @@ export type CliCommandOption = {
 }
 
 export type CliCommandOptionValue =
-  BooleanCliCommandOptionValue |
-  StringCliCommandOptionValue
+  | BooleanCliCommandOptionValue
+  | StringCliCommandOptionValue
 
 export type BooleanCliCommandOptionValue = {
   type: "boolean"
@@ -55,4 +55,4 @@ export type StringCliCommandOptionDefault = {
   name?: Opt<string>
 }
 
-export type Opt<T> = T|null|undefined
+export type Opt<T> = T | null | undefined

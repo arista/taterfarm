@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 async function main() {
-  const {cli} = await import("../build/dist/src/Cli.js")
+  const {cli} = await import("../build/dist/src/lib/Cli.js")
   const importUrl = import.meta.url
   await cli()
 }

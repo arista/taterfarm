@@ -1,11 +1,16 @@
 {
+  "name": "taterfarm-runtime",
   "type": "module",
+  "main": "build/dist/src/lib/exports.js",
+  "module": "build/dist/src/lib/exports.es.js",
+  "types": "build/dist/src/lib/exports.d.ts",
+  "files": [
+    "build/dist"
+  ],
   "scripts": {
     "prettier": "npx prettier --write src/**/*.{ts,tsx,css,scss,html,json,js}",
     "tsc": "npx tsc -b",
-    "tsc-watch": "npx tsc -b -w",
-    "rollup": "npx rollup -c rollup.config.js",
-    "rollup-watch": "npx rollup -w -c rollup.config.js"
+    "tsc-watch": "npx tsc -b -w"
   },
   "devDependencies": {
     "@types/node": "^22.10.7",
@@ -14,8 +19,5 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "commander": "^13.0.0",
-    "minicodegen": "file:../../minicodegen",
-    "taterfarm-runtime": "file:../taterfarm-runtime"
   }
 }
