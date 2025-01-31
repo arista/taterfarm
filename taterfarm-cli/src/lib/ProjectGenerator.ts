@@ -12,14 +12,15 @@ export async function generateProject({
   await run()
 
   async function run() {
-    await prepareDirectory()
-    await addGitignore()
-    await addDirLocals()
-    await addPrettierConfig()
-    await addTsconfig()
+    prepareDirectory()
+    addGitignore()
+    addDirLocals()
+    addPrettierConfig()
+    addTsconfig()
+    writeProjectFiles()
   }
 
-  async function prepareDirectory() {
+  function prepareDirectory() {
     if (!A.FileUtils.pathExists(projectDirectory)) {
       log.info(`Creatimg directory "${projectDirectory}"`)
       A.FileUtils.mkdir(projectDirectory)
@@ -28,7 +29,13 @@ export async function generateProject({
     }
   }
 
-  async function addGitignore() {
+  function writeProjectFiles() {
+    files.writeProjectFiles({
+      projectDirectory,
+    })
+  }
+
+  function addGitignore() {
     files.buildFileFromLines(".gitignore", [
       "node_modules",
       "build/",
@@ -41,7 +48,7 @@ export async function generateProject({
     ])
   }
 
-  async function addDirLocals() {
+  function addDirLocals() {
     files.buildFileFromLines(".dir-locals.el", [
       ";; Used by emacs to prevent it from creating the temporary lockfiles",
       ";; that break the React development server or other watch-based processes",
@@ -49,7 +56,7 @@ export async function generateProject({
     ])
   }
 
-  async function addPrettierConfig() {
+  function addPrettierConfig() {
     files.buildFile("prettier.config.js", (cg) => {
       cg.block(`export default {`, `}`, () => {
         cg.println(`trailingComma: "es5",`)
@@ -59,7 +66,7 @@ export async function generateProject({
     })
   }
 
-  async function addTsconfig() {
+  function addTsconfig() {
     const json = {
       compilerOptions: {
         declaration: true,
@@ -90,7 +97,6 @@ export async function generateProject({
   return {}
 }
 
-
 interface IProjectFiles {
   buildFile(path: string, f: (cg: A.Codegen) => void): void
   buildFileFromLines(
@@ -98,6 +104,7 @@ interface IProjectFiles {
     lines: Array<string | null | undefined>
   ): void
   buildFileFromJson(path: string, json: any): void
+  writeProjectFiles({projectDirectory}: {projectDirectory: string}): void
 }
 
 class ProjectFiles implements IProjectFiles {
@@ -128,6 +135,27 @@ class ProjectFiles implements IProjectFiles {
     this.buildFile(path, (cg) => {
       const str = JSON.stringify(json, null, 2)
       cg.println(str)
+    })
+  }
+
+  writeProjectFiles({
+    projectDirectory,
+    log,
+  }: {
+    projectDirectory: string
+    log: ILog
+  }): void {
+    if (!A.FileUtils.pathExists(projectDirectory)) {
+      log.info(`Creatimg directory "${projectDirectory}"`)
+      A.FileUtils.mkdir(projectDirectory)
+    } else if (A.FileUtils.isFile(projectDirectory)) {
+      throw new Error(`"${projectDirectory}" is a file, not a directory`)
+    }
+
+    this.codeFiles.write({
+      rootPath: projectDirectory,
+      log: true,
+      dryRun: false,
     })
   }
 }
