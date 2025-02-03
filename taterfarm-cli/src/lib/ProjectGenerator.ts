@@ -1,5 +1,6 @@
 import {A, M} from "./index.js"
 import fs from "node:fs"
+import * as Path from "node:path"
 
 export async function generateProject({
   projectDirectory,
@@ -8,6 +9,7 @@ export async function generateProject({
 }): Promise<{}> {
   const log: ILog = new Log()
   const files: IProjectFiles = new ProjectFiles()
+  const projectSpec: M.ProjectDefinition = readProjectDefinition()
 
   await run()
 
@@ -17,6 +19,7 @@ export async function generateProject({
     addDirLocals()
     addPrettierConfig()
     addTsconfig()
+    addPackageJson()
     writeProjectFiles()
   }
 
@@ -26,6 +29,16 @@ export async function generateProject({
       A.FileUtils.mkdir(projectDirectory)
     } else if (A.FileUtils.isFile(projectDirectory)) {
       throw new Error(`"${projectDirectory}" is a file, not a directory`)
+    }
+  }
+
+  function readProjectDefinition(): M.ProjectDefinition {
+    const path = Path.join(projectDirectory, "src", "project.json")
+    if (A.FileUtils.isFile(path)) {
+      return JSON.parse(fs.readFileSync(path).toString())
+    }
+    else {
+      return {}
     }
   }
 
@@ -92,6 +105,32 @@ export async function generateProject({
       },
     }
     files.buildFileFromJson("tsconfig.json", json)
+  }
+
+  function addPackageJson() {
+    const json = {
+      type: "module",
+      scripts: {
+        prettier:
+          "npx prettier --write src/**/*.{ts,tsx,css,scss,html,json,js}",
+        tsc: "npx tsc -b",
+        "tsc-watch": "npx tsc -b -w",
+        rollup: "npx rollup -c rollup.config.js",
+        "rollup-watch": "npx rollup -w -c rollup.config.js",
+      },
+      devDependencies: {
+        "@types/node": "^22.10.7",
+        concurrently: "^9.1.2",
+        prettier: "^3.4.2",
+        typescript: "^5.7.3",
+      },
+      dependencies: {
+        commander: "^13.0.0",
+        minicodegen: "file:../../minicodegen",
+        "taterfarm-runtime": "file:../taterfarm-runtime",
+      },
+    }
+    files.buildFileFromJson("package.json", json)
   }
 
   return {}

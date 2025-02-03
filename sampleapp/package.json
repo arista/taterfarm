@@ -1,0 +1,23 @@
+{
+  "name": "sampleapp",
+  "type": "module",
+  "main": "build/dist/src/lib/exports.js",
+  "module": "build/dist/src/lib/exports.es.js",
+  "types": "build/dist/src/lib/exports.d.ts",
+  "files": [
+    "build/dist"
+  ],
+  "scripts": {
+    "prettier": "npx prettier --write src/**/*.{ts,tsx,css,scss,html,json,js}",
+    "tsc": "npx tsc -b",
+    "tsc-watch": "npx tsc -b -w"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "concurrently": "^9.1.2",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+  }
+}

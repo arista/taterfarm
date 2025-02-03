@@ -1,5 +1,6 @@
 export type ProjectDefinition = {
   cli?: Opt<ProjectCliDefinition>
+  package?: Opt<ProjectPackageDefinition>
 }
 
 export type ProjectCliDefinition = {
@@ -54,5 +55,13 @@ export type StringCliCommandOptionDefault = {
   value: string
   name?: Opt<string>
 }
+
+export type ProjectPackageDefinition = {
+  dependencies?: ProjectDependencies
+  devDependencies?: ProjectDependencies
+  peerDependencies?: ProjectDependencies
+}
+
+export type ProjectDependencies = {[name:string]:string}
 
 export type Opt<T> = T | null | undefined
