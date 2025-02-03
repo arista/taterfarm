@@ -62,6 +62,6 @@ export type ProjectPackageDefinition = {
   peerDependencies?: ProjectDependencies
 }
 
-export type ProjectDependencies = {[name:string]:string}
+export type ProjectDependencies = {[name: string]: string}
 
 export type Opt<T> = T | null | undefined

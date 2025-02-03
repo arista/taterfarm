@@ -5,13 +5,13 @@ Type = OrType
 OrType = first:AndType Space? rest:OrTypeRest*
   { return rest.length === 0 ? first : { type: "OrType", types: [first, ...rest] } }
 
-OrTypeRest = type:AndType Space? "|" Space?
+OrTypeRest = "|" Space? type:AndType Space?
   { return type }
 
 AndType = first:ArrayType Space? rest:AndTypeRest*
   { return rest.length === 0 ? first : { type: "AndType", types: [first, ...rest] } }
 
-AndTypeRest = type:ArrayType Space? "&" Space?
+AndTypeRest = "&" Space? type:ArrayType Space?
   { return type }
 
 ArrayType = first:BaseType Space? rest:ArrayTypeRest*
@@ -23,10 +23,10 @@ ArrayType = first:BaseType Space? rest:ArrayTypeRest*
     return ret
   }
 
-ArrayTypeRest = "[" Space? "]"
+ArrayTypeRest = "[" Space? "]" Space?
   { return "[]" }  
 
-BaseType = ParenType / PrimitiveType / ObjectType / TupleType / NamedType
+BaseType = ParenType / PrimitiveType / ObjectType / TupleType / Literal / NamedType
 
 ParenType = "(" Space? type:Type Space? ")"
   { return type }
@@ -84,8 +84,12 @@ MultiLineComment
       return text.join("");
   }
 
+Literal = StringLiteral / NumberLiteral / BooleanLiteral / NullLiteral
 
-StringLiteral
+StringLiteral = value:StringLiteralValue
+  { return { type: "StringLiteral", value } }
+
+StringLiteralValue
   = '"' doubleQuotedString:DoubleQuotedString '"' { return doubleQuotedString; }
   / "'" singleQuotedString:SingleQuotedString "'" { return singleQuotedString; }
 
@@ -119,7 +123,10 @@ EscapeSequence
 HexEscape
   = hex:[0-9a-fA-F]+ { return hex.join(""); }
 
-NumberLiteral
+NumberLiteral = value:NumberLiteralValue
+  { return { type: "NumberLiteral", value } }
+
+NumberLiteralValue
   = HexNumber
   / BinaryNumber
   / OctalNumber
@@ -151,6 +158,16 @@ Exponent
       return "e" + (sign || "") + digits.join("");
   }
 
+BooleanLiteral = TrueLiteral / FalseLiteral
+
+TrueLiteral = "true"
+  { return { type: "BooleanLiteral", value: true } }
+
+FalseLiteral = "false"
+  { return { type: "BooleanLiteral", value: false } }
+
+NullLiteral = "null"
+  { return { type: "NullLiteral" } }
 
 
 /*

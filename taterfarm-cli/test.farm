@@ -1,0 +1,5 @@
+(number | string) & boolean & {
+  type: "abc" | "def",
+  addresses: A.abc.Numbers[]
+}
+

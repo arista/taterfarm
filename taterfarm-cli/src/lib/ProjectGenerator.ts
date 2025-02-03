@@ -36,8 +36,7 @@ export async function generateProject({
     const path = Path.join(projectDirectory, "src", "project.json")
     if (A.FileUtils.isFile(path)) {
       return JSON.parse(fs.readFileSync(path).toString())
-    }
-    else {
+    } else {
       return {}
     }
   }
