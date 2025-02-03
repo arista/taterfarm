@@ -5,11 +5,15 @@
     "tsc": "npx tsc -b",
     "tsc-watch": "npx tsc -b -w",
     "rollup": "npx rollup -c rollup.config.js",
-    "rollup-watch": "npx rollup -w -c rollup.config.js"
+    "rollup-watch": "npx rollup -w -c rollup.config.js",
+    "peg": "mkdir -p build/dist/lib/peg; npx peggy --format es -o build/dist/src/lib/peg/Project.js src/lib/peg/Project.peg",
+    "peg-watch": "mkdir -p build/dist/lib/peg; npx nodemon -w src/lib/peg/Project.peg --exec \"npx peggy --format es -o build/dist/src/lib/peg/Project.js src/lib/peg/Project.peg\""
   },
   "devDependencies": {
     "@types/node": "^22.10.7",
     "concurrently": "^9.1.2",
+    "nodemon": "^3.1.9",
+    "peggy": "^4.2.0",
     "prettier": "^3.4.2",
     "typescript": "^5.7.3"
   },
