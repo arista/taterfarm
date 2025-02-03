@@ -21,6 +21,14 @@ export async function cli() {
       })
     })
 
+  program
+    .command("parser-test")
+    .argument("<filename>")
+    .action((filename) => {
+      const parsed = A.ParseProject.parseProject({filename})
+      console.log(JSON.stringify(parsed, null, 2))
+    })
+
   await program.parseAsync()
 
   /*
