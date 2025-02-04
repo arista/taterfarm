@@ -1,5 +1,9 @@
 // Grammar for a Project definition file.
 
+//--------------------------------------------------
+// Types
+//--------------------------------------------------
+
 Type = OrType
 
 OrType = first:AndType Space? rest:OrTypeRest*
@@ -26,7 +30,19 @@ ArrayType = first:BaseType Space? rest:ArrayTypeRest*
 ArrayTypeRest = "[" Space? "]" Space?
   { return "[]" }  
 
-BaseType = ParenType / PrimitiveType / ObjectType / TupleType / Literal / Name
+BaseType = FunctionType / ParenType / PrimitiveType / ObjectType / TupleType / Literal / AnyType / UnknownType / VoidType / Name
+
+FunctionType = "(" Space? parameters:FunctionTypeParams? Space? ")" Space? "=>" Space? returnType:Type
+  { return { type: "FunctionType", location: location(), parameters: parameters ?? [], returnType } }
+
+FunctionTypeParams = first:FunctionTypeFirstParam rest:FunctionTypeRestParam*
+  { return [first, ...rest] }
+
+FunctionTypeFirstParam = name:Identifier Space? optional:"?"? Space? ":" Space? type:Type
+  { return { location: location(), name, type, optional: !!optional } }
+
+FunctionTypeRestParam = Space? "," Space? name:Identifier Space? optional:"?"? Space? ":" Space? type:Type
+  { return { location: location(), name, type, optional: !!optional } }
 
 ParenType = "(" Space? type:Type Space? ")"
   { return type }
@@ -42,17 +58,31 @@ BooleanType = "boolean"
 StringType = "string"
   { return { type: "StringType", location: location() } }
 
-ObjectType = "{" Space? properties:ObjectTypeProperty* Space? "}"
+ObjectType = "{" Space? properties:ObjectTypeElement* Space? "}"
   { return { type: "ObjectType", location: location(), properties } }
 
-ObjectTypeProperty = name:(Identifier / StringLiteral) Space? optional:"?"? Space? ":" Space? type:Type Space? ","? Space?
-  { return { name, optional: !!optional, type } }
+ObjectTypeElement = ObjectTypeProperty / ObjectTypeIndex
+
+ObjectTypeProperty = name:(Identifier / StringLiteral) Space? optional:"?"? Space? ":" Space? valueType:Type Space? ","? Space?
+  { return { type: "Property", location: location(), name, optional: !!optional, valueType } }
+
+ObjectTypeIndex = "[" Space? name:Identifier Space? ":" Space? indexType:Type Space? "]" Space? ":" Space? valueType:Type
+  { return { type: "Index", location: location(), name, indexType, valueType } }
 
 TupleType = "[" Space? elementTypes:TupleTypeElement* Space? "]"
   { return { type: "TupleType", location: location(), elementTypes } }
 
 TupleTypeElement = type:Type Space? optional:"?"? Space? ","? Space?
   { return { type, optional: !!optional } }
+
+AnyType = "any"
+  { return { type: "AnyType", location: location() } }
+
+UnknownType = "unknown"
+  { return { type: "UnknownType", location: location() } }
+
+VoidType = "void"
+  { return { type: "VoidType", location: location() } }
 
 NamedType = typeName:Name
   { return { type: "NamedType", location: location(), typeName } }
@@ -73,22 +103,9 @@ QualifiedName = first:Identifier rest:QualifiedNamePart+
 QualifiedNamePart = "." name:Identifier
 { return name }
 
-
-Space = ([ \n\r\t\v\b] / Comment)+
-
-Comment
-  = SingleLineComment
-  / MultiLineComment
-
-SingleLineComment
-  = "//" text:(![\r\n] .)* {
-      return text.join("");
-  }
-
-MultiLineComment
-  = "/*" text:(!"*/" .)* "*/" {
-      return text.join("");
-  }
+//--------------------------------------------------
+// Literals
+//--------------------------------------------------
 
 Literal = StringLiteral / NumberLiteral / BooleanLiteral / NullLiteral
 
@@ -174,3 +191,23 @@ FalseLiteral = "false"
 
 NullLiteral = "null"
   { return { type: "NullLiteral", location: location() } }
+
+//--------------------------------------------------
+// Spaces and Comments
+//--------------------------------------------------
+
+Space = ([ \n\r\t\v\b] / Comment)+
+
+Comment
+  = SingleLineComment
+  / MultiLineComment
+
+SingleLineComment
+  = "//" text:(![\r\n] .)* {
+      return text.join("");
+  }
+
+MultiLineComment
+  = "/*" text:(!"*/" .)* "*/" {
+      return text.join("");
+  }

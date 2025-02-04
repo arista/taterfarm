@@ -4,6 +4,9 @@ export type Type =
   | ArrayType
   | ObjectType
   | TupleType
+  | AnyType
+  | UnknownType
+  | VoidType
   | NumberType
   | BooleanType
   | StringType
@@ -13,6 +16,7 @@ export type Type =
   | NullLiteral
   | UnqualifiedName
   | QualifiedName
+  | FunctionType
 
 export type Location = {
   start: {
@@ -48,14 +52,24 @@ export type ArrayType = {
 export type ObjectType = {
   type: "ObjectType"
   location: Location
-  properties: Array<ObjectTypeProperty>
+  properties: Array<ObjectTypeElement>
+}
+
+export type ObjectTypeElement = ObjectTypeIndex | ObjectTypeProperty
+
+export type ObjectTypeIndex = {
+  type: "Index"
+  location: Location
+  name: string
+  indexType: Type
+  valueType: Type
 }
 
 export type ObjectTypeProperty = {
-  name: string
+  type: "Property"
   location: Location
-  optional: boolean
-  type: Type
+  name: string
+  valueType: Type
 }
 
 export type TupleType = {
@@ -68,6 +82,21 @@ export type TupleTypeElement = {
   type: Type
   location: Location
   optional: boolean
+}
+
+export type AnyType = {
+  type: "AnyType"
+  location: Location
+}
+
+export type UnknownType = {
+  type: "UnknownType"
+  location: Location
+}
+
+export type VoidType = {
+  type: "VoidType"
+  location: Location
 }
 
 export type NumberType = {
@@ -118,4 +147,18 @@ export type QualifiedName = {
   type: "QualifiedName"
   location: Location
   name: Array<string>
+}
+
+export type FunctionType = {
+  type: "FunctionType"
+  location: Location
+  parameters: Array<FunctionTypeParam>
+  returnType: Type
+}
+
+export type FunctionTypeParam = {
+  location: Location
+  name: string
+  type: Type
+  optional: boolean
 }

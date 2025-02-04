@@ -1,5 +1,2 @@
-(number | string) & boolean & {
-  type: "abc" | "def",
-  addresses: A.abc.Numbers[]
-}
+(name:string, age ? : number )=> {type: string}
 
