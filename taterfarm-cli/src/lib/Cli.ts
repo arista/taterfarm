@@ -25,7 +25,7 @@ export async function cli() {
     .command("parser-test")
     .argument("<filename>")
     .action((filename) => {
-      const parsed = A.ParseProject.parseProject({filename})
+      const parsed = A.ParseProjectDefinition.parseProjectDefinition({filename})
       console.log(JSON.stringify(parsed, null, 2))
     })
 

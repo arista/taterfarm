@@ -3,13 +3,13 @@
 Type = OrType
 
 OrType = first:AndType Space? rest:OrTypeRest*
-  { return rest.length === 0 ? first : { type: "OrType", types: [first, ...rest] } }
+  { return rest.length === 0 ? first : { type: "OrType", location: location(), types: [first, ...rest] } }
 
 OrTypeRest = "|" Space? type:AndType Space?
   { return type }
 
 AndType = first:ArrayType Space? rest:AndTypeRest*
-  { return rest.length === 0 ? first : { type: "AndType", types: [first, ...rest] } }
+  { return rest.length === 0 ? first : { type: "AndType", location: location(), types: [first, ...rest] } }
 
 AndTypeRest = "&" Space? type:ArrayType Space?
   { return type }
@@ -18,7 +18,7 @@ ArrayType = first:BaseType Space? rest:ArrayTypeRest*
   {
     let ret = first
     for(let i = 0; i < rest.length; i++) {
-      ret = {type: "ArrayType", elementType: ret}
+      ret = {type: "ArrayType", location: location(), elementType: ret}
     }
     return ret
   }
@@ -26,30 +26,36 @@ ArrayType = first:BaseType Space? rest:ArrayTypeRest*
 ArrayTypeRest = "[" Space? "]" Space?
   { return "[]" }  
 
-BaseType = ParenType / PrimitiveType / ObjectType / TupleType / Literal / NamedType
+BaseType = ParenType / PrimitiveType / ObjectType / TupleType / Literal / Name
 
 ParenType = "(" Space? type:Type Space? ")"
   { return type }
 
-PrimitiveType = typeName: PrimitiveTypeName
-  { return { type: "PrimitiveType", typeName } }
+PrimitiveType = NumberType / BooleanType / StringType
 
-PrimitiveTypeName = "number" / "boolean" / "string"
+NumberType = "number"
+  { return { type: "NumberType", location: location() } }
+
+BooleanType = "boolean"
+  { return { type: "BooleanType", location: location() } }
+
+StringType = "string"
+  { return { type: "StringType", location: location() } }
 
 ObjectType = "{" Space? properties:ObjectTypeProperty* Space? "}"
-  { return { type: "ObjectType", properties } }
+  { return { type: "ObjectType", location: location(), properties } }
 
 ObjectTypeProperty = name:(Identifier / StringLiteral) Space? optional:"?"? Space? ":" Space? type:Type Space? ","? Space?
   { return { name, optional: !!optional, type } }
 
 TupleType = "[" Space? elementTypes:TupleTypeElement* Space? "]"
-  { return { type: "TupleType", elementTypes } }
+  { return { type: "TupleType", location: location(), elementTypes } }
 
 TupleTypeElement = type:Type Space? optional:"?"? Space? ","? Space?
   { return { type, optional: !!optional } }
 
 NamedType = typeName:Name
-  { return { type: "NamedType", typeName } }
+  { return { type: "NamedType", location: location(), typeName } }
 
 Identifier
   = first:[a-zA-Z_$] rest:[a-zA-Z0-9_$]* {
@@ -59,10 +65,10 @@ Identifier
 Name = QualifiedName / UnqualifiedName
 
 UnqualifiedName = name:Identifier
-{ return {type: "UnqualifiedName", name } }
+{ return {type: "UnqualifiedName", location: location(), name } }
 
 QualifiedName = first:Identifier rest:QualifiedNamePart+
-{ return {type: "QualifiedName", name: [first, ...rest] }}
+{ return {type: "QualifiedName", location: location(), name: [first, ...rest] }}
 
 QualifiedNamePart = "." name:Identifier
 { return name }
@@ -87,7 +93,7 @@ MultiLineComment
 Literal = StringLiteral / NumberLiteral / BooleanLiteral / NullLiteral
 
 StringLiteral = value:StringLiteralValue
-  { return { type: "StringLiteral", value } }
+  { return { type: "StringLiteral", location: location(), value } }
 
 StringLiteralValue
   = '"' doubleQuotedString:DoubleQuotedString '"' { return doubleQuotedString; }
@@ -124,7 +130,7 @@ HexEscape
   = hex:[0-9a-fA-F]+ { return hex.join(""); }
 
 NumberLiteral = value:NumberLiteralValue
-  { return { type: "NumberLiteral", value } }
+  { return { type: "NumberLiteral", location: location(), value } }
 
 NumberLiteralValue
   = HexNumber
@@ -161,117 +167,10 @@ Exponent
 BooleanLiteral = TrueLiteral / FalseLiteral
 
 TrueLiteral = "true"
-  { return { type: "BooleanLiteral", value: true } }
+  { return { type: "BooleanLiteral", location: location(), value: true } }
 
 FalseLiteral = "false"
-  { return { type: "BooleanLiteral", value: false } }
+  { return { type: "BooleanLiteral", location: location(), value: false } }
 
 NullLiteral = "null"
-  { return { type: "NullLiteral" } }
-
-
-/*
-StringLiteral = DoubleQuotedStringLiteral / SingleQuotedStringLiteral
-
-DoubleQuotedStringLiteral = "\"" chars:DoubleQuotedStringLiteralChar* "\""
-  { return chars.join("") }
-
-DoubleQuotedStringLiteralChar = StringChar / StringEscape / "\'"
-
-SingleQuotedStringLiteral = "\'" chars:SingleQuotedStringLiteralChar* "\'"
-  { return chars.join("") }
-
-SingleQuotedStringLiteralChar = StringChar / StringEscape / "\""
-
-StringChar = [^\"\'\\\n\r\t\v\b\f]
-
-StringEscape = StringEscape_bs / StringEscape_quote / StringEscape_dquote / StringEscape_n / StringEscape_r / StringEscape_t / StringEscape_v / StringEscape_b / StringEscape_f / StringEscape_0 / StringEscape_lineTerminator / StringEscape_hex / StringEscape_unicode / StringEscape_unicode_codepoint / StringEscape_other
-
-StringEscape_bs = "\\\\"
-  { return "\\" }
-
-StringEscape_quote = "\\\'"
-  { return "\'" }
-
-StringEscape_dquote = "\\\""
-  { return "\"" }
-
-StringEscape_n = "\\n"
-  { return "\n" }
-
-StringEscape_r = "\\r"
-  { return "\r" }
-
-StringEscape_t = "\\t"
-  { return "\t" }
-
-StringEscape_v = "\\v"
-  { return "\v" }
-
-StringEscape_b = "\\b"
-  { return "\b" }
-
-StringEscape_f = "\\f"
-  { return "\f" }
-
-StringEscape_0 = "\\0"
-  { return "\0" }
-
-StringEscape_lineTerminator = "\\" LineTerminator
-  { return "" }
-
-StringEscape_other = "\\" ch:.
-  { return ch }
-
-LineTerminator = CR LF / CR / LF
-
-CR = "\r"
-
-LF = "\n"
-
-StringEscape_hex = "\\x" ch:Hex2Str
-  { return ch }
-
-StringEscape_unicode = "\\u" ch:Hex4Str
-  { return ch }
-
-StringEscape_unicode_codepoint = "\\u{" ch:Hex1_6Str "}"
-  { return ch }
-
-Hex2Str = d:Hex2
-  { return String.fromCharCode(d) }
-
-Hex4Str = d:Hex4
-  { return String.fromCharCode(d) }
-
-Hex1_6Str = d:Hex1_6
-  { return String.fromCharCode(d) }
-
-Hex1 = HexNumberDigit / HexLowerCaseDigit / HexUpperCaseDigit
-
-HexNumberDigit = d:[0-9]
-  { return d.charCodeAt(0) - 48 }
-
-HexLowerCaseDigit = d:[a-f]
-  { return d.charCodeAt(0) - 97 + 10 }
-
-HexUpperCaseDigit = d:[A-F]
-  { return d.charCodeAt(0) - 65 + 10 }
-
-Hex2 = d1:Hex1 d2:Hex1
-  { return (d1 * 16) + d2 }
-
-Hex3 = d1:Hex2 d2:Hex1
-  { return (d1 * 16) + d2 }
-
-Hex4 = d1:Hex3 d2:Hex1
-  { return (d1 * 16) + d2 }
-
-Hex5 = d1:Hex4 d2:Hex1
-  { return (d1 * 16) + d2 }
-
-Hex6 = d1:Hex5 d2:Hex1
-  { return (d1 * 16) + d2 }
-
-Hex1_6 = Hex6 / Hex5 / Hex4 / Hex3 / Hex2 / Hex1
-*/
+  { return { type: "NullLiteral", location: location() } }
