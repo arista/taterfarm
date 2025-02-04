@@ -17,7 +17,7 @@ export type CliCommand = {
 
 export type CliCommandOption = {
   name: string
-  descripiton?: Opt<string>
+  description?: Opt<string>
   char: string
   value?: Opt<CliCommandOptionValue>
 }
