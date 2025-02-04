@@ -30,7 +30,7 @@ ArrayType = first:BaseType Space? rest:ArrayTypeRest*
 ArrayTypeRest = "[" Space? "]" Space?
   { return "[]" }  
 
-BaseType = FunctionType / ParenType / PrimitiveType / ObjectType / TupleType / Literal / AnyType / UnknownType / VoidType / Name
+BaseType = FunctionType / ParenType / PrimitiveType / ObjectType / TupleType / Literal / AnyType / UnknownType / VoidType / GenericInstantiation / Name
 
 FunctionType = "(" Space? parameters:FunctionTypeParams? Space? ")" Space? "=>" Space? returnType:Type
   { return { type: "FunctionType", location: location(), parameters: parameters ?? [], returnType } }
@@ -95,13 +95,19 @@ Identifier
 Name = QualifiedName / UnqualifiedName
 
 UnqualifiedName = name:Identifier
-{ return {type: "UnqualifiedName", location: location(), name } }
+  { return {type: "UnqualifiedName", location: location(), name } }
 
 QualifiedName = first:Identifier rest:QualifiedNamePart+
-{ return {type: "QualifiedName", location: location(), name: [first, ...rest] }}
+  { return {type: "QualifiedName", location: location(), name: [first, ...rest] }}
 
 QualifiedNamePart = "." name:Identifier
-{ return name }
+  { return name }
+
+GenericInstantiation = name:Name Space? "<" Space? types:GenericInstantiationType* Space? ">"
+  { return {type: "GenericInstantiation", location: location(), name, types: types } }
+
+GenericInstantiationType = type:Type Space? ","? Space?
+  { return type }
 
 //--------------------------------------------------
 // Literals

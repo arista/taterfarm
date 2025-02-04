@@ -14,8 +14,8 @@ export type Type =
   | NumberLiteral
   | BooleanLiteral
   | NullLiteral
-  | UnqualifiedName
-  | QualifiedName
+  | GenericInstantiation
+  | Name
   | FunctionType
 
 export type Location = {
@@ -137,6 +137,8 @@ export type NullLiteral = {
   location: Location
 }
 
+export type Name = UnqualifiedName | QualifiedName
+
 export type UnqualifiedName = {
   type: "UnqualifiedName"
   location: Location
@@ -161,4 +163,11 @@ export type FunctionTypeParam = {
   name: string
   type: Type
   optional: boolean
+}
+
+export type GenericInstantiation = {
+  type: "GenericInstantiation"
+  location: Location
+  name: Name
+  types: Array<Type>
 }

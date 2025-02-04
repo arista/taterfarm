@@ -1,2 +1,5 @@
-(name:string, age ? : number )=> {type: string}
+Map<string, number>
+
+//(string | (name:string, age ? : number )=> {type: string})
+
 
