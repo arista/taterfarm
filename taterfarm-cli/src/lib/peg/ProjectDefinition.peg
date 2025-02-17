@@ -58,8 +58,8 @@ BooleanType = "boolean"
 StringType = "string"
   { return { type: "StringType", location: location() } }
 
-ObjectType = "{" Space? properties:ObjectTypeElement* Space? "}"
-  { return { type: "ObjectType", location: location(), properties } }
+ObjectType = "{" Space? elements:ObjectTypeElement* Space? "}"
+  { return { type: "ObjectType", location: location(), elements } }
 
 ObjectTypeElement = ObjectTypeProperty / ObjectTypeIndex
 
@@ -69,8 +69,8 @@ ObjectTypeProperty = name:(Identifier / StringLiteral) Space? optional:"?"? Spac
 ObjectTypeIndex = "[" Space? name:Identifier Space? ":" Space? indexType:Type Space? "]" Space? ":" Space? valueType:Type
   { return { type: "Index", location: location(), name, indexType, valueType } }
 
-TupleType = "[" Space? elementTypes:TupleTypeElement* Space? "]"
-  { return { type: "TupleType", location: location(), elementTypes } }
+TupleType = "[" Space? elements:TupleTypeElement* Space? "]"
+  { return { type: "TupleType", location: location(), elements } }
 
 TupleTypeElement = type:Type Space? optional:"?"? Space? ","? Space?
   { return { type, optional: !!optional } }
@@ -86,6 +86,16 @@ VoidType = "void"
 
 NamedType = typeName:Name
   { return { type: "NamedType", location: location(), typeName } }
+
+GenericInstantiation = namedType:NamedType Space? "<" Space? types:GenericInstantiationType* Space? ">"
+  { return {type: "GenericInstantiation", location: location(), name, types: types } }
+
+GenericInstantiationType = type:Type Space? ","? Space?
+  { return type }
+
+//--------------------------------------------------
+// Names and Identifiers
+//--------------------------------------------------
 
 Identifier
   = first:[a-zA-Z_$] rest:[a-zA-Z0-9_$]* {
@@ -103,11 +113,6 @@ QualifiedName = first:Identifier rest:QualifiedNamePart+
 QualifiedNamePart = "." name:Identifier
   { return name }
 
-GenericInstantiation = name:Name Space? "<" Space? types:GenericInstantiationType* Space? ">"
-  { return {type: "GenericInstantiation", location: location(), name, types: types } }
-
-GenericInstantiationType = type:Type Space? ","? Space?
-  { return type }
 
 //--------------------------------------------------
 // Literals

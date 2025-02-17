@@ -7,6 +7,7 @@ export type Type =
   | AnyType
   | UnknownType
   | VoidType
+  | NamedType
   | NumberType
   | BooleanType
   | StringType
@@ -15,7 +16,6 @@ export type Type =
   | BooleanLiteral
   | NullLiteral
   | GenericInstantiation
-  | Name
   | FunctionType
 
 export type Location = {
@@ -52,7 +52,7 @@ export type ArrayType = {
 export type ObjectType = {
   type: "ObjectType"
   location: Location
-  properties: Array<ObjectTypeElement>
+  elements: Array<ObjectTypeElement>
 }
 
 export type ObjectTypeElement = ObjectTypeIndex | ObjectTypeProperty
@@ -69,13 +69,14 @@ export type ObjectTypeProperty = {
   type: "Property"
   location: Location
   name: string
+  optional: boolean
   valueType: Type
 }
 
 export type TupleType = {
   type: "TupleType"
   location: Location
-  elementTypes: Array<TupleTypeElement>
+  elements: Array<TupleTypeElement>
 }
 
 export type TupleTypeElement = {
@@ -97,6 +98,12 @@ export type UnknownType = {
 export type VoidType = {
   type: "VoidType"
   location: Location
+}
+
+export type NamedType = {
+  type: "NamedType"
+  location: Location
+  name: Name
 }
 
 export type NumberType = {
@@ -168,6 +175,6 @@ export type FunctionTypeParam = {
 export type GenericInstantiation = {
   type: "GenericInstantiation"
   location: Location
-  name: Name
+  namedType: NamedType
   types: Array<Type>
 }
